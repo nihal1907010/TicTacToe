@@ -1,4 +1,5 @@
 import pygame
+import time
 
 pygame.init()
 
@@ -60,7 +61,7 @@ def get_winner(board):
     return winner
 
 
-def minimax(board_, no_of_moves, nought_player):
+def minimax(board_, no_of_moves, nought_player, alpha, beta):
     coords = (-1, -1)
 
     if no_of_moves == 9:
@@ -79,11 +80,14 @@ def minimax(board_, no_of_moves, nought_player):
             for j in range(3):
                 if board[i][j] == -1:
                     board[i][j] = 0
-                    val_move = minimax(board, no_of_moves + 1, 1 - nought_player)
+                    val_move = minimax(board, no_of_moves + 1, 1 - nought_player, alpha, beta)
                     if val_move[0] > maxEval:
                         maxEval = val_move[0]
                         coords = (i, j)
                     board[i][j] = -1
+                    alpha = max(alpha, val_move[0])
+                    if beta <= alpha:
+                        return maxEval, coords
         return maxEval, coords
     else:
         minEval = 1000
@@ -92,11 +96,14 @@ def minimax(board_, no_of_moves, nought_player):
             for j in range(3):
                 if board[i][j] == -1:
                     board[i][j] = 1
-                    val_move = minimax(board, no_of_moves + 1, 1 - nought_player)
+                    val_move = minimax(board, no_of_moves + 1, 1 - nought_player, alpha, beta)
                     if val_move[0] < minEval:
                         minEval = val_move[0]
                         coords = (i, j)
                     board[i][j] = -1
+                    beta = min(beta, val_move[0])
+                    if beta <= alpha:
+                        return minEval, coords
         return minEval, coords
 
 
@@ -109,7 +116,10 @@ while run:
     draw_board()
     draw_piece(BOARD)
     if TURN == 1 and output == (-1, (-1, -1)):
-        output = minimax(BOARD, NO_OF_MOVES, TURN)
+        start = time.time()
+        output = minimax(BOARD, NO_OF_MOVES, TURN, -1000, +1000)
+        end = time.time()
+        print(end - start)
         BOARD[output[1][0]][output[1][1]] = TURN
         TURN = 1 - TURN
         NO_OF_MOVES += 1
